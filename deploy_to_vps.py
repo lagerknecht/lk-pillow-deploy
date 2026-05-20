@@ -337,13 +337,15 @@ _idx = src.rfind('\ndef fit_cover(')
 if _idx != -1:
     src = src[:_idx].rstrip() + '\n'
     log.append('alter Helper-Block ersetzt')
-if 'from PIL import Image, ImageDraw, ImageFont, ImageOps' not in src:
-    if 'from PIL import Image, ImageDraw, ImageFont' in src:
-        src = src.replace('from PIL import Image, ImageDraw, ImageFont',
-                          'from PIL import Image, ImageDraw, ImageFont, ImageOps', 1)
-        log.append('ImageOps-Import')
+_FULL = 'from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter, ImageChops'
+if _FULL not in src:
+    _lo = src.find('from PIL import Image, ImageDraw, ImageFont')
+    if _lo != -1:
+        _eol = src.find(chr(10), _lo)
+        src = src[:_lo] + _FULL + src[_eol:]
+        log.append('PIL-Import vervollstaendigt')
     else:
-        log.append('WARN: PIL-Import-Zeile abweichend - ImageOps manuell ergaenzen')
+        log.append('WARN: PIL-Import-Zeile nicht gefunden')
 if 'exif_transpose' not in src:
     t = '    raw = base64.b64decode(b64_string)\n    return Image.open(io.BytesIO(raw))'
     r = ('    raw = base64.b64decode(b64_string)\n'
